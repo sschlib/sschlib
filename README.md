@@ -188,7 +188,7 @@ TODO
 
 Copyrights & Disclaimers
 ========================
-sschlib is copyrighted by ymnk, JCraft,Inc. and is licensed through BSD style license.
+JSch is copyrighted by ymnk, JCraft,Inc. and is licensed through BSD style license.
 Read the LICENSE.txt file for the complete license.
 
 
