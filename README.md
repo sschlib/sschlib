@@ -1,6 +1,6 @@
 Sschlib - SSH library for Java 
 ==============================
-Sschlib - yet another SSH library for Java. Sscjlib is a fork of JSch from JCraft.  
+Sschlib - yet another SSH library for Java. Ssclib is a fork of JSch from JCraft.  
   
 https://github.com/sschlib/sschlib    
 
@@ -23,7 +23,7 @@ Documentation
 
 Why sschlib?
 ==========
-Sscjlib is a pure Java implementation of SSH2. It is a fork of JSch from JCraft.
+Ssclib is a pure Java implementation of SSH2. It is a fork of JSch from JCraft.
 The plan is to develop this project on GitHub as an open and transparent open source project,
 and accept contributions from other developers.
 
