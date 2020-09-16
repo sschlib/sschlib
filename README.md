@@ -16,14 +16,14 @@ into your own Java programs. sschlib is licensed under BSD style license.
 
 Documentation
 =============
-* 
+* [JavaDoc](https://sschlib.github.io/sschlib/javadoc-0-2-0/)
+* [Wiki](https://github.com/sschlib/sschlib/wiki)
 
 
 Directories & Files in the Source Tree
 ======================================
 * src/main/java/ has source trees of sschlib
 * example/ has some samples, which demonstrate the usages.
-* tools/ has scripts for Ant.
 
 
 Why sschlib?
