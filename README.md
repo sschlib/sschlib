@@ -1,8 +1,9 @@
+sschlib 
+=================
+sschlib - yet another SSH library for Java
+https://github.com/sschlib/sschlib
 
-                   sschlib - yet another SSH library for Java
-
-                        https://github.com/sschlib/sschlib
-
+[![Build Status](https://travis-ci.org/sschlib/sschlib.svg?branch=master)](https://travis-ci.org/sschlib/sschlib)  [![License (BSD style license)](https://img.shields.io/badge/license-BSD-green)](https://raw.githubusercontent.com/sschlib/sschlib/master/LICENSE.txt) 
 
 Description
 ===========
@@ -21,7 +22,7 @@ Documentation
 
 Directories & Files in the Source Tree
 ======================================
-* src/com/ has source trees of sschlib
+* src/main/java/ has source trees of sschlib
 * example/ has some samples, which demonstrate the usages.
 * tools/ has scripts for Ant.
 
