@@ -36,6 +36,7 @@
       <java.version>1.8</java.version>
       <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
       <maven.release.plugin.version>2.5.3</maven.release.plugin.version>
+      <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
   </properties>
 
   <build>
@@ -74,17 +75,25 @@
         </plugin>
 
         <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven.javadoc.plugin.version}</version>
+            <configuration>
+                <source>8</source>
+            </configuration>
+            <executions>
+                <execution>
+                    <id>attach-javadocs</id>
+                    <goals>
+                        <goal>jar</goal>
+                    </goals>
+                    <!-- Disable doclint checks to build it under java 8 javadoc -->
+                    <configuration>
+                        <additionalJOptions>-Xdoclint:none</additionalJOptions>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
 
     </plugins>
     <extensions>

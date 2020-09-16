@@ -1,7 +1,8 @@
-sschlib 
-=================
-sschlib - yet another SSH library for Java
-https://github.com/sschlib/sschlib
+sschlib - SSH library for Java 
+==============================
+sschlib - yet another SSH library for Java. Sscjlib is a fork of JSch from JCraft.  
+  
+https://github.com/sschlib/sschlib    
 
 [![Build Status](https://travis-ci.org/sschlib/sschlib.svg?branch=master)](https://travis-ci.org/sschlib/sschlib)  [![License (BSD style license)](https://img.shields.io/badge/license-BSD-green)](https://raw.githubusercontent.com/sschlib/sschlib/master/LICENSE.txt) 
 
@@ -29,12 +30,9 @@ Directories & Files in the Source Tree
 
 Why sschlib?
 ==========
-Our intension in developing this stuff is to enable users of our pure
-java X servers, WiredX(http://wiredx.net/) and WeirdX, to enjoy secure X
-sessions.  Our efforts have mostly targeted the SSH2 protocol in relation
-to X Window System and X11 forwarding.  Of course, we are also interested in 
-adding other functionality - port forward, file transfer, terminal emulation, etc.
-
+Sscjlib is a pure Java implementation of SSH2. It is a fork of JSch from JCraft.
+The plan is to develop this project on GitHub as an open and transparent open source project,
+and accept contributions from other developers.
 
 Features
 ========
