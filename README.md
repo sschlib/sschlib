@@ -1,6 +1,6 @@
-sschlib - SSH library for Java 
+Sschlib - SSH library for Java 
 ==============================
-sschlib - yet another SSH library for Java. Sscjlib is a fork of JSch from JCraft.  
+Sschlib - yet another SSH library for Java. Sscjlib is a fork of JSch from JCraft.  
   
 https://github.com/sschlib/sschlib    
 
@@ -8,7 +8,7 @@ https://github.com/sschlib/sschlib
 
 Description
 ===========
-sschlib is a pure Java implementation of SSH2.  sschlib allows you to 
+Sschlib is a pure Java implementation of SSH2.  sschlib allows you to 
 connect to an sshd server and use port forwarding, X11 forwarding, 
 file transfer, etc., and you can integrate its functionality
 into your own Java programs. sschlib is licensed under BSD style license.
@@ -16,9 +16,7 @@ into your own Java programs. sschlib is licensed under BSD style license.
 
 Documentation
 =============
-* README files all over the source tree have info related to the stuff
-  in the directories. 
-* ChangeLog: what changed from the previous version?
+* 
 
 
 Directories & Files in the Source Tree
@@ -82,16 +80,6 @@ Features
 * NONE Cipher switching.
   http://www.psc.edu/networking/projects/hpn-ssh/none.php
 * sschlib is licensed under BSD style license(refer to LICENSE.txt).
-
-
-How To Try
-==========
-This archive does not include java byte code, so please compile
-the source code by your self.
-  $ cd sschlib-?.?.?/src
-  $ javac com/jcraft/sschlib/*java com/jcraft/sschlib/jce/*java com/jcraft/jzlib/*.java
-'/examples/' directory has included some samples to demonstrate what 
-sschlib can do.  Please refer to '/examples/README' file.
 
 
 AES cipher
@@ -188,8 +176,6 @@ Copyrights & Disclaimers
 ========================
 JSch is copyrighted by ymnk, JCraft,Inc. and is licensed through BSD style license.
 Read the LICENSE.txt file for the complete license.
-
-
 
 ``SSH is a registered trademark and Secure Shell is a trademark of
 SSH Communications Security Corp (www.ssh.com)''.
