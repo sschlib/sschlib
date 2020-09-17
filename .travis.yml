@@ -8,4 +8,4 @@ jdk:
   - openjdk9
   - openjdk8
 
-install: mvn install
+install: mvn install -Dgpg.skip
