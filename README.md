@@ -13,6 +13,22 @@ connect to an sshd server and use port forwarding, X11 forwarding,
 file transfer, etc., and you can integrate its functionality
 into your own Java programs. sschlib is licensed under BSD style license.
 
+## Sschlib version 0.2.0 released 2020-09-17 ##
+Get version 0.2.0 here - https://github.com/LibrePDF/OpenPDF/releases/
+
+## Use Sschlib as Maven dependency
+Add this to your pom.xml file to use the latest version of OpenPDF:
+
+        <dependency>
+            <groupId>com.github.sschlib</groupId>
+            <artifactId>sschlib</artifactId>
+            <version>0.2.0</version>
+        </dependency>
+
+## License ##
+
+BSD License - https://github.com/sschlib/sschlib/blob/master/LICENSE.txt
+
 
 Documentation
 =============
