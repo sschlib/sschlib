@@ -41,7 +41,8 @@ Why sschlib?
 ==========
 Ssclib is a pure Java implementation of SSH2. It is a fork of JSch from JCraft.
 The plan is to develop this project on GitHub as an open and transparent open source project,
-and accept contributions from other developers.
+and accept contributions from other developers. Further, the plan is to make this an actively maintained project,
+update it to the latest Java features and listen to the community of users on GitHub.  
 
 Features
 ========
@@ -181,6 +182,8 @@ TODO
 * replacing cipher, hash by JCE with pure Java code.
 * SSH File Transfer Protocol version 4.
 * error handling.
+* Java Generics
+* Better logging library support
 
 
 Copyrights & Disclaimers
