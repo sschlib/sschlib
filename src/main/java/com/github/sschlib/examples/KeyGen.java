@@ -11,6 +11,8 @@
  * The private key and public key are in the OpenSSH format.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import javax.swing.*;
 

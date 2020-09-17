@@ -10,6 +10,8 @@
  * private-key will be re-encrypted with that new passphrase.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import javax.swing.*;
 

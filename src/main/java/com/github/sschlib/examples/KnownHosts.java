@@ -1,22 +1,48 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate the packet compression.
- *   $ CLASSPATH=.:../build javac Compression.java
- *   $ CLASSPATH=.:../build java Compression
- * You will be asked username, hostname and passwd. 
- * If everything works fine, you will get the shell prompt. 
- * In this program, all data from sshd server to jsch will be compressed.
+ * This program will demonstrate the 'known_hosts' file handling.
+ *   $ CLASSPATH=.:../build javac KnownHosts.java
+ *   $ CLASSPATH=.:../build java KnownHosts
+ * You will be asked username, hostname, a path for 'known_hosts' and passwd. 
+ * If everything works fine, you will get the shell prompt.
+ * In current implementation, jsch only reads 'known_hosts' for checking
+ * and does not modify it.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class Compression{
+public class KnownHosts{
   public static void main(String[] arg){
 
     try{
       JSch jsch=new JSch();
+
+      JFileChooser chooser = new JFileChooser();
+      chooser.setDialogTitle("Choose your known_hosts(ex. ~/.ssh/known_hosts)");
+      chooser.setFileHidingEnabled(false);
+      int returnVal=chooser.showOpenDialog(null);
+      if(returnVal==JFileChooser.APPROVE_OPTION) {
+        System.out.println("You chose "+
+			   chooser.getSelectedFile().getAbsolutePath()+".");
+	jsch.setKnownHosts(chooser.getSelectedFile().getAbsolutePath());
+      }
+
+      HostKeyRepository hkr=jsch.getHostKeyRepository();
+      HostKey[] hks=hkr.getHostKey();
+      if(hks!=null){
+	System.out.println("Host keys in "+hkr.getKnownHostsRepositoryID());
+	for(int i=0; i<hks.length; i++){
+	  HostKey hk=hks[i];
+	  System.out.println(hk.getHost()+" "+
+			     hk.getType()+" "+
+			     hk.getFingerPrint(jsch));
+	}
+	System.out.println("");
+      }
 
       String host=null;
       if(arg.length>0){
@@ -36,11 +62,20 @@ public class Compression{
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
 
-      session.setConfig("compression.s2c", "zlib@openssh.com,zlib,none");
-      session.setConfig("compression.c2s", "zlib@openssh.com,zlib,none");
-      session.setConfig("compression_level", "9");
+      /*
+      // In adding to known_hosts file, host names will be hashed. 
+      session.setConfig("HashKnownHosts",  "yes");
+      */
 
       session.connect();
+
+      {
+	HostKey hk=session.getHostKey();
+	System.out.println("HostKey: "+
+			   hk.getHost()+" "+
+			   hk.getType()+" "+
+			   hk.getFingerPrint(jsch));
+      }
 
       Channel channel=session.openChannel("shell");
 

@@ -8,6 +8,8 @@
  * be ugly because of lacks of terminal-emulation, but you can issue commands.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;

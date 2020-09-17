@@ -3,6 +3,8 @@
  * This program will demonstrate how to use the Subsystem channel.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;

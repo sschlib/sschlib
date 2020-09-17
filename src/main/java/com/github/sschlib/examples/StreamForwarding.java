@@ -1,26 +1,28 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate X11 forwarding.
- *   $ CLASSPATH=.:../build javac X11Forwarding.java 
- *   $ CLASSPATH=.:../build java X11Forwarding
- * You will be asked username, hostname, displayname and passwd. 
- * If your X server does not run at 127.0.0.1, please enter correct
- * displayname. If everything works fine, you will get the shell prompt.
- * Try X applications; for example, xlogo.
+ * This program will demonstrate the stream forwarding. The given Java
+ * I/O streams will be forwared to the given remote host and port on
+ * the remote side.  It is simmilar to the -L option of ssh command,
+ * but you don't have to assign and open a local tcp port.
+ *   $ CLASSPATH=.:../build javac StreamForwarding.java
+ *   $ CLASSPATH=.:../build java StreamForwarding
+ * You will be asked username, hostname, host:hostport and passwd. 
+ * If everything works fine, System.in and System.out streams will be
+ * forwared to remote port and you can send messages from command line.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class X11Forwarding{
+public class StreamForwarding{
   public static void main(String[] arg){
-
-    String xhost="127.0.0.1";
-    int xport=0;
+    int port;
 
     try{
-      JSch jsch=new JSch();  
+      JSch jsch=new JSch();
 
       String host=null;
       if(arg.length>0){
@@ -36,27 +38,24 @@ public class X11Forwarding{
 
       Session session=jsch.getSession(user, host, 22);
 
-      String display=JOptionPane.showInputDialog("Please enter display name", 
-						 xhost+":"+xport);
-      xhost=display.substring(0, display.indexOf(':'));
-      xport=Integer.parseInt(display.substring(display.indexOf(':')+1));
-
-      session.setX11Host(xhost);
-      session.setX11Port(xport+6000);
-
       // username and password will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
       session.connect();
 
-      Channel channel=session.openChannel("shell");
+      String foo=JOptionPane.showInputDialog("Enter host and port", 
+						 "host:port");
+      host=foo.substring(0, foo.indexOf(':'));
+      port=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
 
-      channel.setXForwarding(true);
-
+      System.out.println("System.{in,out} will be forwarded to "+
+			 host+":"+port+".");
+      Channel channel = session.getStreamForwarder(host, port);
+      // InputStream in = channel.getInputStream();
+      // OutpuStream out = channel.getOutputStream();
       channel.setInputStream(System.in);
       channel.setOutputStream(System.out);
-
-      channel.connect();
+      channel.connect(1000);
     }
     catch(Exception e){
       System.out.println(e);

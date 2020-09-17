@@ -1,19 +1,26 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate how to use "aes128-cbc".
+ * This program will demonstrate the ssh session via SOCKS proxy.
+ *   $ CLASSPATH=.:../build javac ViaSOCKS.java 
+ *   $ CLASSPATH=.:../build java ViaSOCKS
+ * You will be asked username, hostname, proxy-server and passwd. 
+ * If everything works fine, you will get the shell prompt.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class AES{
+public class ViaSOCKS5{
   public static void main(String[] arg){
+
+    String proxy_host;
+    int proxy_port;
 
     try{
       JSch jsch=new JSch();
-
-      //jsch.setKnownHosts("/home/foo/.ssh/known_hosts");
 
       String host=null;
       if(arg.length>0){
@@ -28,15 +35,17 @@ public class AES{
       host=host.substring(host.indexOf('@')+1);
 
       Session session=jsch.getSession(user, host, 22);
-      //session.setPassword("your password");
- 
+
+      String proxy=JOptionPane.showInputDialog("Enter proxy server",
+                                                 "hostname:port");
+      proxy_host=proxy.substring(0, proxy.indexOf(':'));
+      proxy_port=Integer.parseInt(proxy.substring(proxy.indexOf(':')+1));
+
+      session.setProxy(new ProxySOCKS5(proxy_host, proxy_port));
+
       // username and password will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
-
-      session.setConfig("cipher.s2c", "aes128-cbc,3des-cbc,blowfish-cbc");
-      session.setConfig("cipher.c2s", "aes128-cbc,3des-cbc,blowfish-cbc");
-      session.setConfig("CheckCiphers", "aes128-cbc");
 
       session.connect();
 
@@ -73,15 +82,13 @@ public class AES{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-        JOptionPane.showConfirmDialog(null, ob, message,
-                                      JOptionPane.OK_CANCEL_OPTION);
+	  JOptionPane.showConfirmDialog(null, ob, message,
+					JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-        passwd=passwordField.getText();
-        return true;
+	passwd=passwordField.getText();
+	return true;
       }
-      else{ 
-        return false; 
-      }
+      else{ return false; }
     }
     public void showMessage(String message){
       JOptionPane.showMessageDialog(null, message);

@@ -1,21 +1,20 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate the ssh session via SOCKS proxy.
- *   $ CLASSPATH=.:../build javac ViaSOCKS.java 
- *   $ CLASSPATH=.:../build java ViaSOCKS
- * You will be asked username, hostname, proxy-server and passwd. 
- * If everything works fine, you will get the shell prompt.
+ * This program will demonstrate the keyboard-interactive authentication.
+ *   $ CLASSPATH=.:../build javac UserAuthKI.java
+ *   $ CLASSPATH=.:../build java UserAuthKI
+ * If the remote sshd supports keyboard-interactive authentication,
+ * you will be prompted.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class ViaSOCKS5{
+public class UserAuthKI{
   public static void main(String[] arg){
-
-    String proxy_host;
-    int proxy_port;
 
     try{
       JSch jsch=new JSch();
@@ -34,17 +33,9 @@ public class ViaSOCKS5{
 
       Session session=jsch.getSession(user, host, 22);
 
-      String proxy=JOptionPane.showInputDialog("Enter proxy server",
-                                                 "hostname:port");
-      proxy_host=proxy.substring(0, proxy.indexOf(':'));
-      proxy_port=Integer.parseInt(proxy.substring(proxy.indexOf(':')+1));
-
-      session.setProxy(new ProxySOCKS5(proxy_host, proxy_port));
-
-      // username and password will be given via UserInfo interface.
+      // username and passphrase will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
-
       session.connect();
 
       Channel channel=session.openChannel("shell");
@@ -71,26 +62,29 @@ public class ViaSOCKS5{
              null, options, options[0]);
        return foo==0;
     }
-  
+
     String passwd;
     JTextField passwordField=(JTextField)new JPasswordField(20);
-
+  
     public String getPassphrase(){ return null; }
-    public boolean promptPassphrase(String message){ return true; }
+    public boolean promptPassphrase(String message){ return false; }
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+        JOptionPane.showConfirmDialog(null, ob, message,
+                                      JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
-      else{ return false; }
+      else{ 
+        return false; 
+      }
     }
     public void showMessage(String message){
       JOptionPane.showMessageDialog(null, message);
     }
+
     final GridBagConstraints gbc = 
       new GridBagConstraints(0,0,1,1,1,1,
                              GridBagConstraints.NORTHWEST,
@@ -102,6 +96,14 @@ public class ViaSOCKS5{
                                               String instruction,
                                               String[] prompt,
                                               boolean[] echo){
+/*
+//System.out.println("promptKeyboardInteractive");
+System.out.println("destination: "+destination);
+System.out.println("name: "+name);
+System.out.println("instruction: "+instruction);
+System.out.println("prompt.length: "+prompt.length);
+System.out.println("prompt: "+prompt[0]);
+*/
       panel = new JPanel();
       panel.setLayout(new GridBagLayout());
 
@@ -150,5 +152,3 @@ public class ViaSOCKS5{
     }
   }
 }
-
-

@@ -63,6 +63,9 @@
                 <compilerArgs>
                     <arg>-Xlint:unchecked</arg>
                 </compilerArgs>
+                <excludes>
+                    <exclude>**/com/github/sschlib/examples/*</exclude>
+                </excludes>
             </configuration>
         </plugin>
         <plugin>

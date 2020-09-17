@@ -10,6 +10,8 @@
  * commands must be a file, not a directory.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;

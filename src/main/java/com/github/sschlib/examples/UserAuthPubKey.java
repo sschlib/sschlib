@@ -7,6 +7,8 @@
  * If everything works fine, you will get the shell prompt
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;

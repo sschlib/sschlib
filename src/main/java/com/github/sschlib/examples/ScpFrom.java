@@ -1,28 +1,40 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate how to enable none cipher.
+ * This program will demonstrate the file transfer from remote to local
+ *   $ CLASSPATH=.:../build javac ScpFrom.java
+ *   $ CLASSPATH=.:../build java ScpFrom user@remotehost:file1 file2
+ * You will be asked passwd. 
+ * If everything works fine, a file 'file1' on 'remotehost' will copied to
+ * local 'file1'.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 import java.io.*;
 
-public class ScpToNoneCipher{
+public class ScpFrom{
   public static void main(String[] arg){
     if(arg.length!=2){
-      System.err.println("usage: java ScpTo file1 user@remotehost:file2");
+      System.err.println("usage: java ScpFrom user@remotehost:file1 file2");
       System.exit(-1);
     }      
 
-    FileInputStream fis=null;
+    FileOutputStream fos=null;
     try{
 
-      String lfile=arg[0];
-      String user=arg[1].substring(0, arg[1].indexOf('@'));
-      arg[1]=arg[1].substring(arg[1].indexOf('@')+1);
-      String host=arg[1].substring(0, arg[1].indexOf(':'));
-      String rfile=arg[1].substring(arg[1].indexOf(':')+1);
+      String user=arg[0].substring(0, arg[0].indexOf('@'));
+      arg[0]=arg[0].substring(arg[0].indexOf('@')+1);
+      String host=arg[0].substring(0, arg[0].indexOf(':'));
+      String rfile=arg[0].substring(arg[0].indexOf(':')+1);
+      String lfile=arg[1];
+
+      String prefix=null;
+      if(new File(lfile).isDirectory()){
+        prefix=lfile+File.separator;
+      }
 
       JSch jsch=new JSch();
       Session session=jsch.getSession(user, host, 22);
@@ -32,13 +44,8 @@ public class ScpToNoneCipher{
       session.setUserInfo(ui);
       session.connect();
 
-      session.setConfig("cipher.s2c", "none,aes128-cbc,3des-cbc,blowfish-cbc");
-      session.setConfig("cipher.c2s", "none,aes128-cbc,3des-cbc,blowfish-cbc");
-
-      session.rekey();
-
-      // exec 'scp -t rfile' remotely
-      String command="scp -p -t "+rfile;
+      // exec 'scp -f rfile' remotely
+      String command="scp -f "+rfile;
       Channel channel=session.openChannel("exec");
       ((ChannelExec)channel).setCommand(command);
 
@@ -48,42 +55,68 @@ public class ScpToNoneCipher{
 
       channel.connect();
 
-      if(checkAck(in)!=0){
-	System.exit(0);
-      }
-
-      // send "C0644 filesize filename", where filename should not include '/'
-      long filesize=(new File(lfile)).length();
-      command="C0644 "+filesize+" ";
-      if(lfile.lastIndexOf('/')>0){
-        command+=lfile.substring(lfile.lastIndexOf('/')+1);
-      }
-      else{
-        command+=lfile;
-      }
-      command+="\n";
-      out.write(command.getBytes()); out.flush();
-
-      if(checkAck(in)!=0){
-	System.exit(0);
-      }
-
-      // send a content of lfile
-      fis=new FileInputStream(lfile);
       byte[] buf=new byte[1024];
-      while(true){
-        int len=fis.read(buf, 0, buf.length);
-	if(len<=0) break;
-        out.write(buf, 0, len); out.flush();
-      }
-      fis.close();
-      fis=null;
 
       // send '\0'
       buf[0]=0; out.write(buf, 0, 1); out.flush();
 
-      if(checkAck(in)!=0){
-	System.exit(0);
+      while(true){
+	int c=checkAck(in);
+        if(c!='C'){
+	  break;
+	}
+
+        // read '0644 '
+        in.read(buf, 0, 5);
+
+        long filesize=0L;
+        while(true){
+          if(in.read(buf, 0, 1)<0){
+            // error
+            break; 
+          }
+          if(buf[0]==' ')break;
+          filesize=filesize*10L+(long)(buf[0]-'0');
+        }
+
+        String file=null;
+        for(int i=0;;i++){
+          in.read(buf, i, 1);
+          if(buf[i]==(byte)0x0a){
+            file=new String(buf, 0, i);
+            break;
+  	  }
+        }
+
+	//System.out.println("filesize="+filesize+", file="+file);
+
+        // send '\0'
+        buf[0]=0; out.write(buf, 0, 1); out.flush();
+
+        // read a content of lfile
+        fos=new FileOutputStream(prefix==null ? lfile : prefix+file);
+        int foo;
+        while(true){
+          if(buf.length<filesize) foo=buf.length;
+	  else foo=(int)filesize;
+          foo=in.read(buf, 0, foo);
+          if(foo<0){
+            // error 
+            break;
+          }
+          fos.write(buf, 0, foo);
+          filesize-=foo;
+          if(filesize==0L) break;
+        }
+        fos.close();
+        fos=null;
+
+	if(checkAck(in)!=0){
+	  System.exit(0);
+	}
+
+        // send '\0'
+        buf[0]=0; out.write(buf, 0, 1); out.flush();
       }
 
       session.disconnect();
@@ -92,7 +125,7 @@ public class ScpToNoneCipher{
     }
     catch(Exception e){
       System.out.println(e);
-      try{if(fis!=null)fis.close();}catch(Exception ee){}
+      try{if(fos!=null)fos.close();}catch(Exception ee){}
     }
   }
 

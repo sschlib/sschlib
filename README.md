@@ -34,7 +34,7 @@ Documentation
 =============
 * [JavaDoc](https://sschlib.github.io/sschlib/javadoc-0-2-0/)
 * [Wiki](https://github.com/sschlib/sschlib/wiki)
-* [Examples](examples)
+* [Examples](src/main/java/com/github/sschlib/examples)
 
 
 Why sschlib?

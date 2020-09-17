@@ -1,25 +1,27 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate the port forwarding like option -R of
- * ssh command; the given port on the remote host will be forwarded to
- * the given host and port  on the local side.
- *   $ CLASSPATH=.:../build javac PortForwardingR.java
- *   $ CLASSPATH=.:../build java PortForwardingR
+ * This program will demonstrate the port forwarding like option -L of
+ * ssh command; the given port on the local host will be forwarded to
+ * the given remote host and port on the remote side.
+ *   $ CLASSPATH=.:../build javac PortForwardingL.java
+ *   $ CLASSPATH=.:../build java PortForwardingL
  * You will be asked username, hostname, port:host:hostport and passwd. 
  * If everything works fine, you will get the shell prompt.
- * Try the port on remote host.
+ * Try the port on localhost.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class PortForwardingR{
+public class PortForwardingL{
   public static void main(String[] arg){
 
-    int rport;
-    String lhost;
     int lport;
+    String rhost;
+    int rport;
 
     try{
       JSch jsch=new JSch();
@@ -38,12 +40,12 @@ public class PortForwardingR{
 
       Session session=jsch.getSession(user, host, 22);
 
-      String foo=JOptionPane.showInputDialog("Enter -R port:host:hostport", 
+      String foo=JOptionPane.showInputDialog("Enter -L port:host:hostport",
 					     "port:host:hostport");
-      rport=Integer.parseInt(foo.substring(0, foo.indexOf(':')));
+      lport=Integer.parseInt(foo.substring(0, foo.indexOf(':')));
       foo=foo.substring(foo.indexOf(':')+1);
-      lhost=foo.substring(0, foo.indexOf(':'));
-      lport=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
+      rhost=foo.substring(0, foo.indexOf(':'));
+      rport=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
 
       // username and password will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
@@ -51,12 +53,11 @@ public class PortForwardingR{
 
       session.connect();
 
-      // Channel channel=session.openChannel("shell");
-      // channel.connect();
+      //Channel channel=session.openChannel("shell");
+      //channel.connect();
 
-      session.setPortForwardingR(rport, lhost, lport);
-
-      System.out.println(host+":"+rport+" -> "+lhost+":"+lport);
+      int assinged_port=session.setPortForwardingL(lport, rhost, rport);
+      System.out.println("localhost:"+assinged_port+" -> "+rhost+":"+rport);
     }
     catch(Exception e){
       System.out.println(e);

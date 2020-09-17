@@ -1,17 +1,21 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate how to exec 'sudo' on the remote.
+ * This program will demonstrate how to use "aes128-cbc".
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
-import java.io.*;
 
-public class Sudo{
+public class AES{
   public static void main(String[] arg){
+
     try{
-      JSch jsch=new JSch();  
+      JSch jsch=new JSch();
+
+      //jsch.setKnownHosts("/home/foo/.ssh/known_hosts");
 
       String host=null;
       if(arg.length>0){
@@ -26,63 +30,24 @@ public class Sudo{
       host=host.substring(host.indexOf('@')+1);
 
       Session session=jsch.getSession(user, host, 22);
-      
+      //session.setPassword("your password");
+ 
+      // username and password will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
+
+      session.setConfig("cipher.s2c", "aes128-cbc,3des-cbc,blowfish-cbc");
+      session.setConfig("cipher.c2s", "aes128-cbc,3des-cbc,blowfish-cbc");
+      session.setConfig("CheckCiphers", "aes128-cbc");
+
       session.connect();
 
-      String command=JOptionPane.showInputDialog("Enter command, execed with sudo", 
-                                                 "printenv SUDO_USER");
+      Channel channel=session.openChannel("shell");
 
-      String sudo_pass=null;
-      {
-        JTextField passwordField=(JTextField)new JPasswordField(8);
-        Object[] ob={passwordField}; 
-        int result=
-          JOptionPane.showConfirmDialog(null, 
-                                        ob,
-                                        "Enter password for sudo",
-                                        JOptionPane.OK_CANCEL_OPTION);
-        if(result!=JOptionPane.OK_OPTION){
-          System.exit(-1);
-        }  
-        sudo_pass=passwordField.getText();
-      }
-
-      Channel channel=session.openChannel("exec");
-   
-      // man sudo
-      //   -S  The -S (stdin) option causes sudo to read the password from the
-      //       standard input instead of the terminal device.
-      //   -p  The -p (prompt) option allows you to override the default
-      //       password prompt and use a custom one.
-      ((ChannelExec)channel).setCommand("sudo -S -p '' "+command);
-
-
-      InputStream in=channel.getInputStream();
-      OutputStream out=channel.getOutputStream();
-      ((ChannelExec)channel).setErrStream(System.err);
+      channel.setInputStream(System.in);
+      channel.setOutputStream(System.out);
 
       channel.connect();
-
-      out.write((sudo_pass+"\n").getBytes());
-      out.flush();
-
-      byte[] tmp=new byte[1024];
-      while(true){
-        while(in.available()>0){
-          int i=in.read(tmp, 0, 1024);
-          if(i<0)break;
-          System.out.print(new String(tmp, 0, i));
-        }
-        if(channel.isClosed()){
-          System.out.println("exit-status: "+channel.getExitStatus());
-          break;
-        }
-        try{Thread.sleep(1000);}catch(Exception ee){}
-      }
-      channel.disconnect();
-      session.disconnect();
     }
     catch(Exception e){
       System.out.println(e);
@@ -182,3 +147,5 @@ public class Sudo{
     }
   }
 }
+
+

@@ -1,18 +1,21 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate how to provide a network service like
- * inetd by using remote port-forwarding functionality.
+ * This program will demonstrate the packet compression.
+ *   $ CLASSPATH=.:../build javac Compression.java
+ *   $ CLASSPATH=.:../build java Compression
+ * You will be asked username, hostname and passwd. 
+ * If everything works fine, you will get the shell prompt. 
+ * In this program, all data from sshd server to jsch will be compressed.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
-import java.io.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class Daemon{
+public class Compression{
   public static void main(String[] arg){
-
-    int rport;
 
     try{
       JSch jsch=new JSch();
@@ -31,55 +34,25 @@ public class Daemon{
 
       Session session=jsch.getSession(user, host, 22);
 
-      String foo=JOptionPane.showInputDialog("Enter remote port number", 
-                                             "8888");
-      rport=Integer.parseInt(foo);
-
       // username and password will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
 
+      session.setConfig("compression.s2c", "zlib@openssh.com,zlib,none");
+      session.setConfig("compression.c2s", "zlib@openssh.com,zlib,none");
+      session.setConfig("compression_level", "9");
+
       session.connect();
 
-      //session.setPortForwardingR(rport, Parrot.class.getName());
-      session.setPortForwardingR(rport, "Daemon$Parrot");
-      System.out.println(host+":"+rport+" <--> "+"Parrot");
+      Channel channel=session.openChannel("shell");
+
+      channel.setInputStream(System.in);
+      channel.setOutputStream(System.out);
+
+      channel.connect();
     }
     catch(Exception e){
       System.out.println(e);
-    }
-  }
-
-  public static class Parrot implements ForwardedTCPIPDaemon{
-    ChannelForwardedTCPIP channel;
-    Object[] arg;
-    InputStream in;
-    OutputStream out;
-
-    public void setChannel(ChannelForwardedTCPIP c, InputStream in, OutputStream out){
-      this.channel=c;
-      this.in=in;
-      this.out=out;
-    }
-    public void setArg(Object[] arg){this.arg=arg;}
-    public void run(){
-      try{
-        byte[] buf=new byte[1024];
-        System.out.println("remote port: "+channel.getRemotePort());
-        System.out.println("remote host: "+channel.getSession().getHost());
-        while(true){
-          int i=in.read(buf, 0, buf.length);
-          if(i<=0)break;
-          out.write(buf, 0, i);
-          out.flush();
-          if(buf[0]=='.')break;
-        }
-      }
-      catch(JSchException e){
-        System.out.println("session is down.");
-      }
-      catch(IOException e){
-      }
     }
   }
 
@@ -103,11 +76,12 @@ public class Daemon{
     public boolean promptPassphrase(String message){ return true; }
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
-      int result=JOptionPane.showConfirmDialog(null, ob, message,
-                                               JOptionPane.OK_CANCEL_OPTION);
+      int result=
+	  JOptionPane.showConfirmDialog(null, ob, message,
+					JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-        passwd=passwordField.getText();
-        return true;
+	passwd=passwordField.getText();
+	return true;
       }
       else{ return false; }
     }
@@ -173,3 +147,5 @@ public class Daemon{
     }
   }
 }
+
+

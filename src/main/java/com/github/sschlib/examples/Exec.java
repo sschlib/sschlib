@@ -1,26 +1,24 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate the stream forwarding. The given Java
- * I/O streams will be forwared to the given remote host and port on
- * the remote side.  It is simmilar to the -L option of ssh command,
- * but you don't have to assign and open a local tcp port.
- *   $ CLASSPATH=.:../build javac StreamForwarding.java
- *   $ CLASSPATH=.:../build java StreamForwarding
- * You will be asked username, hostname, host:hostport and passwd. 
- * If everything works fine, System.in and System.out streams will be
- * forwared to remote port and you can send messages from command line.
+ * This program will demonstrate remote exec.
+ *  $ CLASSPATH=.:../build javac Exec.java 
+ *  $ CLASSPATH=.:../build java Exec
+ * You will be asked username, hostname, displayname, passwd and command.
+ * If everything works fine, given command will be invoked 
+ * on the remote side and outputs will be printed out.
  *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
+import java.io.*;
 
-public class StreamForwarding{
+public class Exec{
   public static void main(String[] arg){
-    int port;
-
     try{
-      JSch jsch=new JSch();
+      JSch jsch=new JSch();  
 
       String host=null;
       if(arg.length>0){
@@ -35,25 +33,61 @@ public class StreamForwarding{
       host=host.substring(host.indexOf('@')+1);
 
       Session session=jsch.getSession(user, host, 22);
+      
+      /*
+      String xhost="127.0.0.1";
+      int xport=0;
+      String display=JOptionPane.showInputDialog("Enter display name", 
+                                                 xhost+":"+xport);
+      xhost=display.substring(0, display.indexOf(':'));
+      xport=Integer.parseInt(display.substring(display.indexOf(':')+1));
+      session.setX11Host(xhost);
+      session.setX11Port(xport+6000);
+      */
 
       // username and password will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
       session.connect();
 
-      String foo=JOptionPane.showInputDialog("Enter host and port", 
-						 "host:port");
-      host=foo.substring(0, foo.indexOf(':'));
-      port=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
+      String command=JOptionPane.showInputDialog("Enter command", 
+                                                 "set|grep SSH");
 
-      System.out.println("System.{in,out} will be forwarded to "+
-			 host+":"+port+".");
-      Channel channel = session.getStreamForwarder(host, port);
-      // InputStream in = channel.getInputStream();
-      // OutpuStream out = channel.getOutputStream();
-      channel.setInputStream(System.in);
-      channel.setOutputStream(System.out);
-      channel.connect(1000);
+      Channel channel=session.openChannel("exec");
+      ((ChannelExec)channel).setCommand(command);
+
+      // X Forwarding
+      // channel.setXForwarding(true);
+
+      //channel.setInputStream(System.in);
+      channel.setInputStream(null);
+
+      //channel.setOutputStream(System.out);
+
+      //FileOutputStream fos=new FileOutputStream("/tmp/stderr");
+      //((ChannelExec)channel).setErrStream(fos);
+      ((ChannelExec)channel).setErrStream(System.err);
+
+      InputStream in=channel.getInputStream();
+
+      channel.connect();
+
+      byte[] tmp=new byte[1024];
+      while(true){
+        while(in.available()>0){
+          int i=in.read(tmp, 0, 1024);
+          if(i<0)break;
+          System.out.print(new String(tmp, 0, i));
+        }
+        if(channel.isClosed()){
+          if(in.available()>0) continue;
+          System.out.println("exit-status: "+channel.getExitStatus());
+          break;
+        }
+        try{Thread.sleep(1000);}catch(Exception ee){}
+      }
+      channel.disconnect();
+      session.disconnect();
     }
     catch(Exception e){
       System.out.println(e);
@@ -81,13 +115,15 @@ public class StreamForwarding{
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
       int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+        JOptionPane.showConfirmDialog(null, ob, message,
+                                      JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
-      else{ return false; }
+      else{ 
+        return false; 
+      }
     }
     public void showMessage(String message){
       JOptionPane.showMessageDialog(null, message);
@@ -151,5 +187,3 @@ public class StreamForwarding{
     }
   }
 }
-
-

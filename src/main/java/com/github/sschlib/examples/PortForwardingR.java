@@ -1,17 +1,29 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate how to enable logging mechanism and
- * get logging messages.
+ * This program will demonstrate the port forwarding like option -R of
+ * ssh command; the given port on the remote host will be forwarded to
+ * the given host and port  on the local side.
+ *   $ CLASSPATH=.:../build javac PortForwardingR.java
+ *   $ CLASSPATH=.:../build java PortForwardingR
+ * You will be asked username, hostname, port:host:hostport and passwd. 
+ * If everything works fine, you will get the shell prompt.
+ * Try the port on remote host.
+ *
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class Logger{
+public class PortForwardingR{
   public static void main(String[] arg){
-    
+
+    int rport;
+    String lhost;
+    int lport;
+
     try{
-      JSch.setLogger(new MyLogger());
       JSch jsch=new JSch();
 
       String host=null;
@@ -28,39 +40,28 @@ public class Logger{
 
       Session session=jsch.getSession(user, host, 22);
 
+      String foo=JOptionPane.showInputDialog("Enter -R port:host:hostport", 
+					     "port:host:hostport");
+      rport=Integer.parseInt(foo.substring(0, foo.indexOf(':')));
+      foo=foo.substring(foo.indexOf(':')+1);
+      lhost=foo.substring(0, foo.indexOf(':'));
+      lport=Integer.parseInt(foo.substring(foo.indexOf(':')+1));
+
       // username and password will be given via UserInfo interface.
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
 
       session.connect();
 
-      Channel channel=session.openChannel("shell");
+      // Channel channel=session.openChannel("shell");
+      // channel.connect();
 
-      channel.setInputStream(System.in);
-      channel.setOutputStream(System.out);
+      session.setPortForwardingR(rport, lhost, lport);
 
-      channel.connect();
+      System.out.println(host+":"+rport+" -> "+lhost+":"+lport);
     }
     catch(Exception e){
       System.out.println(e);
-    }
-  }
-
-  public static class MyLogger implements com.jcraft.jsch.Logger {
-    static java.util.Hashtable name=new java.util.Hashtable();
-    static{
-      name.put(new Integer(DEBUG), "DEBUG: ");
-      name.put(new Integer(INFO), "INFO: ");
-      name.put(new Integer(WARN), "WARN: ");
-      name.put(new Integer(ERROR), "ERROR: ");
-      name.put(new Integer(FATAL), "FATAL: ");
-    }
-    public boolean isEnabled(int level){
-      return true;
-    }
-    public void log(int level, String message){
-      System.err.print(name.get(new Integer(level)));
-      System.err.println(message);
     }
   }
 
@@ -76,7 +77,7 @@ public class Logger{
              null, options, options[0]);
        return foo==0;
     }
-
+  
     String passwd;
     JTextField passwordField=(JTextField)new JPasswordField(20);
 
@@ -84,15 +85,14 @@ public class Logger{
     public boolean promptPassphrase(String message){ return true; }
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
-      int result=JOptionPane.showConfirmDialog(null, ob, message,
-                                               JOptionPane.OK_CANCEL_OPTION);
+      int result=
+	  JOptionPane.showConfirmDialog(null, ob, message,
+					JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-        passwd=passwordField.getText();
-        return true;
+	passwd=passwordField.getText();
+	return true;
       }
-      else{ 
-        return false; 
-      }
+      else{ return false; }
     }
     public void showMessage(String message){
       JOptionPane.showMessageDialog(null, message);
@@ -156,5 +156,3 @@ public class Logger{
     }
   }
 }
-
-

@@ -1,46 +1,20 @@
 /* -*-mode:java; c-basic-offset:2; indent-tabs-mode:nil -*- */
 /**
- * This program will demonstrate the 'known_hosts' file handling.
- *   $ CLASSPATH=.:../build javac KnownHosts.java
- *   $ CLASSPATH=.:../build java KnownHosts
- * You will be asked username, hostname, a path for 'known_hosts' and passwd. 
- * If everything works fine, you will get the shell prompt.
- * In current implementation, jsch only reads 'known_hosts' for checking
- * and does not modify it.
- *
+ * This program will demonstrate how to enable logging mechanism and
+ * get logging messages.
  */
+package com.github.sschlib.examples;
+
 import com.jcraft.jsch.*;
 import java.awt.*;
 import javax.swing.*;
 
-public class KnownHosts{
+public class Logger{
   public static void main(String[] arg){
-
+    
     try{
+      JSch.setLogger(new MyLogger());
       JSch jsch=new JSch();
-
-      JFileChooser chooser = new JFileChooser();
-      chooser.setDialogTitle("Choose your known_hosts(ex. ~/.ssh/known_hosts)");
-      chooser.setFileHidingEnabled(false);
-      int returnVal=chooser.showOpenDialog(null);
-      if(returnVal==JFileChooser.APPROVE_OPTION) {
-        System.out.println("You chose "+
-			   chooser.getSelectedFile().getAbsolutePath()+".");
-	jsch.setKnownHosts(chooser.getSelectedFile().getAbsolutePath());
-      }
-
-      HostKeyRepository hkr=jsch.getHostKeyRepository();
-      HostKey[] hks=hkr.getHostKey();
-      if(hks!=null){
-	System.out.println("Host keys in "+hkr.getKnownHostsRepositoryID());
-	for(int i=0; i<hks.length; i++){
-	  HostKey hk=hks[i];
-	  System.out.println(hk.getHost()+" "+
-			     hk.getType()+" "+
-			     hk.getFingerPrint(jsch));
-	}
-	System.out.println("");
-      }
 
       String host=null;
       if(arg.length>0){
@@ -60,20 +34,7 @@ public class KnownHosts{
       UserInfo ui=new MyUserInfo();
       session.setUserInfo(ui);
 
-      /*
-      // In adding to known_hosts file, host names will be hashed. 
-      session.setConfig("HashKnownHosts",  "yes");
-      */
-
       session.connect();
-
-      {
-	HostKey hk=session.getHostKey();
-	System.out.println("HostKey: "+
-			   hk.getHost()+" "+
-			   hk.getType()+" "+
-			   hk.getFingerPrint(jsch));
-      }
 
       Channel channel=session.openChannel("shell");
 
@@ -84,6 +45,24 @@ public class KnownHosts{
     }
     catch(Exception e){
       System.out.println(e);
+    }
+  }
+
+  public static class MyLogger implements com.jcraft.jsch.Logger {
+    static java.util.Hashtable name=new java.util.Hashtable();
+    static{
+      name.put(new Integer(DEBUG), "DEBUG: ");
+      name.put(new Integer(INFO), "INFO: ");
+      name.put(new Integer(WARN), "WARN: ");
+      name.put(new Integer(ERROR), "ERROR: ");
+      name.put(new Integer(FATAL), "FATAL: ");
+    }
+    public boolean isEnabled(int level){
+      return true;
+    }
+    public void log(int level, String message){
+      System.err.print(name.get(new Integer(level)));
+      System.err.println(message);
     }
   }
 
@@ -99,7 +78,7 @@ public class KnownHosts{
              null, options, options[0]);
        return foo==0;
     }
-  
+
     String passwd;
     JTextField passwordField=(JTextField)new JPasswordField(20);
 
@@ -107,14 +86,15 @@ public class KnownHosts{
     public boolean promptPassphrase(String message){ return true; }
     public boolean promptPassword(String message){
       Object[] ob={passwordField}; 
-      int result=
-	  JOptionPane.showConfirmDialog(null, ob, message,
-					JOptionPane.OK_CANCEL_OPTION);
+      int result=JOptionPane.showConfirmDialog(null, ob, message,
+                                               JOptionPane.OK_CANCEL_OPTION);
       if(result==JOptionPane.OK_OPTION){
-	passwd=passwordField.getText();
-	return true;
+        passwd=passwordField.getText();
+        return true;
       }
-      else{ return false; }
+      else{ 
+        return false; 
+      }
     }
     public void showMessage(String message){
       JOptionPane.showMessageDialog(null, message);
